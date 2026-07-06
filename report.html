@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Loan Page — Detailed Insight Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0d14;
+  --surface: #111827;
+  --surface2: #1a2235;
+  --border: #1f2d44;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --accent: #3b82f6;
+  --accent2: #8b5cf6;
+  --green: #22c55e;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --heat-green: #d4f8e8;
+  --heat-amber: #fff4d4;
+  --heat-red: #ffd6d6;
+}
+* { box-sizing: border-box; margin:0; padding:0; }
+body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+[data-theme='dark'] { --bg:#0a0d14; --surface:#111827; --surface2:#1a2235; --border:#1f2d44; --text:#e2e8f0; --muted:#64748b; }
+[data-theme='light'] { --bg:#ffffff; --surface:#f9fafb; --surface2:#e5e7eb; --border:#d1d5db; --text:#111827; --muted:#6b7280; }
+.hero { background:linear-gradient(135deg,#0a0d14 0%,#0f1a2e 40%,#0a0d14 100%); border-bottom:1px solid var(--border); padding:60px 40px 50px; text-align:center; position:relative; overflow:hidden; }
+.hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(59,130,246,0.12),transparent); pointer-events:none; }
+.hero-tag { display:inline-block; background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(139,92,246,0.15)); border:1px solid rgba(59,130,246,0.3); color:#93c5fd; font-size:12px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:5px 14px; border-radius:100px; margin-bottom:20px; }
+.hero h1 { font-size:clamp(2rem,5vw,3.2rem); font-weight:800; background:linear-gradient(135deg,#e2e8f0,#93c5fd,#c4b5fd); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:12px; line-height:1.2; }
+.hero p { color:var(--muted); font-size:1rem; max-width:600px; margin:0 auto 24px; }
+.nav { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; padding:16px 40px; background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; }
+.nav a { color:var(--muted); text-decoration:none; font-size:13px; font-weight:500; padding:6px 14px; border-radius:8px; border:1px solid transparent; transition:all 0.2s; }
+.nav a:hover { color:var(--text); border-color:var(--border); background:var(--surface2); }
+.section { max-width:1400px; margin:0 auto; padding:48px 32px; border-bottom:1px solid var(--border); }
+.section-tag { display:inline-block; font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#93c5fd; margin-bottom:8px; }
+.section-title { font-size:1.5rem; font-weight:700; margin-bottom:6px; color:var(--text); }
+.section-subtitle { color:var(--muted); font-size:0.9rem; margin-bottom:28px; }
+.table-wrap { overflow-x:auto; border-radius:14px; border:1px solid var(--border); }
+table { width:100%; border-collapse:collapse; font-size:12px; min-width:1400px; }
+th, td { padding:12px 10px; text-align:center; border-bottom:1px solid var(--border); border-right:1px solid var(--border); }
+th:first-child, th:nth-child(2) { text-align:left; }
+.feat-th { max-width:90px; writing-mode:vertical-lr; transform:rotate(180deg); height:130px; vertical-align:bottom; padding:10px 6px; font-size:11px; }
+.feat-th span { display:block; white-space:normal; }
+.td-yes { background:var(--heat-green); }
+.td-no { background:var(--heat-red); }
+.tooltip { position:relative; cursor:pointer; }
+.tooltip:hover::after { content:attr(data-tip); position:absolute; left:50%; transform:translateX(-50%); bottom:125%; background:#333; color:#fff; padding:4px 8px; border-radius:4px; white-space:nowrap; font-size:11px; }
+footer { text-align:center; padding:24px; color:var(--muted); font-size:12px; border-top:1px solid var(--border); }
+.toggle { position:fixed; top:10px; right:10px; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; cursor:pointer; color:var(--text); font-size:12px; cursor:pointer; z-index:200; }
+.insight-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+.insight-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 20px; }
+.insight-card h4 { font-size:13px; font-weight:700; color:#93c5fd; margin-bottom:6px; }
+.insight-card p { font-size:12.5px; color:var(--muted); }
+.hero-stat { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 24px; text-align:center; min-width:160px; }
+.hero-stat .num { font-size:1.8rem; font-weight:800; color:#3b82f6; }
+.hero-stat .label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-top:2px; }
+thead tr { background:linear-gradient(135deg,#111827,#1a2235); }
+th { color:var(--muted); font-weight:600; white-space:nowrap; }
+tbody tr:hover { background:var(--surface2); }
+.td-yes { color:#166534; font-weight:600; }
+.td-no { color:#991b1b; }
+</style>
+</head>
+<body data-theme="dark">
+<div class="toggle" onclick="toggleTheme()">Toggle Dark/Light</div>
+<div class="hero">
+  <div class="hero-tag">🔬 Competitor Research Report</div>
+  <h1>Personal Loan Page<br>Detailed Insight Report</h1>
+  <p>A deep structural analysis of 37 personal loan pages from India's leading banks and fintech lenders — uncovering patterns, scores, and actionable recommendations.</p>
+</div>
+<nav class="nav">
+  <a href="#summary">Executive Summary</a>
+  <a href="#heatmap">Feature Heatmap</a>
+  <a href="#scores">Scoring Model</a>
+  <a href="#profiles">Bank Profiles</a>
+  <a href="#insights">Key Insights</a>
+</nav>
+<section class="section" id="summary">
+  <div class="section-tag">Section 01</div>
+  <div class="section-title">Executive Summary</div>
+  <div class="section-subtitle">High‑level KPIs and overall scores.</div>
+  <div id="exec-summary" style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center;">
+    <div class="hero-stat"><div class="num" id="avg-coverage">0%</div><div class="label">Avg Feature Coverage</div></div>
+    <div class="hero-stat"><div class="num" id="top-score">0</div><div class="label">Top Score (Bank)</div></div>
+    <div class="hero-stat"><div class="num" id="critical-missing">0</div><div class="label">Avg Critical Missing</div></div>
+  </div>
+</section>
+<section class="section" id="heatmap">
+  <div class="section-tag">Section 02</div>
+  <div class="section-title">Feature Heatmap</div>
+  <div class="section-subtitle">Green = present, Red = missing. Hover for tooltip.</div>
+  <div class="table-wrap"><table id="heatmap-table"><thead><tr><th>Bank / Lender</th><th>H1</th></tr></thead><tbody></tbody></table></div>
+</section>
+<section class="section" id="scores">
+  <div class="section-tag">Section 03</div>
+  <div class="section-title">Scoring Model</div>
+  <div class="section-subtitle">Weighted score (critical × 2, important × 1). Click column to sort.</div>
+  <div class="table-wrap"><table id="score-table"><thead><tr><th>Bank</th><th>Coverage %</th><th>Score</th></tr></thead><tbody></tbody></table></div>
+</section>
+<section class="section" id="profiles">
+  <div class="section-tag">Section 04</div>
+  <div class="section-title">Detailed Bank Profiles</div>
+  <div class="section-subtitle">Per‑bank coverage and suggestions.</div>
+  <div id="bank-profiles"></div>
+</section>
+<section class="section" id="insights">
+  <div class="section-tag">Section 05</div>
+  <div class="section-title">Key Insights</div>
+  <div class="section-subtitle">Observations from the analysis.</div>
+  <div class="insight-grid" id="dynamic-insights">
+    <!-- Dynamic insights will be injected here -->
+  </div>
+</section>
+<footer>
+  Generated by Antigravity AI • Personal Loan Insight Report • 37 pages analysed • July 2026
+</footer>
+<script>
+const criticalFeatures = ["EMI Calculator","Apply Now CTA","Interest Rate Info","Eligibility Criteria","Documents Required","FAQ Section","Instant Disbursal Highlight","Lead Capture Form"];
+function toggleTheme(){ const body=document.body; const cur=body.getAttribute('data-theme'); body.setAttribute('data-theme',cur==='dark'?'light':'dark'); }
+fetch('analysis_data.json')
+  .then(r=>r.json())
+  .then(data=>{ const banks=data.banks; const allFeatures=Object.keys(Object.values(banks)[0].features);
+    let totalCoverage=0, totalCriticalMissing=0, topScore=0, topBank='';
+    const heatmapBody=document.querySelector('#heatmap-table tbody');
+    const scoreBody=document.querySelector('#score-table tbody');
+    const profilesDiv=document.getElementById('bank-profiles');
+    for(const [name, info] of Object.entries(banks)){
+      const feats=info.features; let present=0, critPresent=0;
+      for(const f of allFeatures){ if(feats[f]) present++; if(criticalFeatures.includes(f) && feats[f]) critPresent++; }
+      const coverage=(present/allFeatures.length*100).toFixed(1);
+      const critMissing=criticalFeatures.filter(f=>!feats[f]).length;
+      const score=critPresent*2 + (present-critPresent);
+      totalCoverage+=parseFloat(coverage);
+      totalCriticalMissing+=critMissing;
+      if(score>topScore){ topScore=score; topBank=name; }
+      const scoreTr=document.createElement('tr');
+      const bankTd=document.createElement('td'); bankTd.textContent=name; scoreTr.appendChild(bankTd);
+      const covTd=document.createElement('td'); covTd.textContent=coverage+"%"; scoreTr.appendChild(covTd);
+      const scoreTd=document.createElement('td'); scoreTd.textContent=score; scoreTr.appendChild(scoreTd);
+      scoreBody.appendChild(scoreTr);
+      const profCard=document.createElement('div');
+      profCard.style.border='1px solid var(--border)'; profCard.style.borderRadius='12px'; profCard.style.padding='16px'; profCard.style.marginBottom='12px';
+      profCard.innerHTML=`<h3>${name}</h3><p>Coverage: ${coverage}% (${present}/${allFeatures.length} features)</p><p>Missing Critical: ${criticalFeatures.filter(f=>!feats[f]).join(', ')||'None'}</p>`;
+      profilesDiv.appendChild(profCard);
+    }
+    const numBanks = Object.keys(banks).length;
+    const avgCov = (totalCoverage / numBanks).toFixed(1);
+    document.getElementById('avg-coverage').textContent=avgCov+'%';
+    document.getElementById('top-score').textContent=topScore+' ('+topBank+')';
+    document.getElementById('critical-missing').textContent=(totalCriticalMissing/numBanks).toFixed(1);
+
+    // Dynamic Insights Generation
+    let featureCounts = {};
+    allFeatures.forEach(f => featureCounts[f] = 0);
+    for(const info of Object.values(banks)){
+      for(const f of allFeatures){ if(info.features[f]) featureCounts[f]++; }
+    }
+    
+    let maxCount = -1, mostPrevalent = '';
+    let minCount = numBanks + 1, leastPrevalent = '';
+    for(const f in featureCounts){
+      if(featureCounts[f] > maxCount){ maxCount = featureCounts[f]; mostPrevalent = f; }
+      if(featureCounts[f] < minCount){ minCount = featureCounts[f]; leastPrevalent = f; }
+    }
+    
+    const getPct = (feat) => Math.round((featureCounts[feat] || 0) / numBanks * 100);
+    const avgFeats = Math.round((totalCoverage / numBanks / 100) * allFeatures.length);
+    
+    document.getElementById('dynamic-insights').innerHTML = `
+      <div class="insight-card"><h4>Top Feature: ${mostPrevalent}</h4><p>Found on ${Math.round((maxCount/numBanks)*100)}% of pages. This is an industry standard.</p></div>
+      <div class="insight-card"><h4>Rarest Feature: ${leastPrevalent}</h4><p>Only ${Math.round((minCount/numBanks)*100)}% of pages include this, presenting a unique differentiation opportunity.</p></div>
+      <div class="insight-card"><h4>Mobile App Adoption</h4><p>${getPct('Mobile App')}% of lenders promote their mobile app directly on the landing page.</p></div>
+      <div class="insight-card"><h4>Comparison Tools</h4><p>Surprisingly rare. Only ${getPct('Comparison Tool')}% of pages offer a direct comparison tool.</p></div>
+      <div class="insight-card"><h4>Feature Density</h4><p>On average, a bank includes ${avgFeats} out of ${allFeatures.length} key structural features.</p></div>
+      <div class="insight-card"><h4>Lead Capture Priority</h4><p>${getPct('Lead Capture Form')}% of pages prioritize capturing user information immediately.</p></div>
+    `;
+
+    const headerRow=document.querySelector('#heatmap-table thead tr');
+    // Add bank name + H1 headers
+    const h1Th=document.createElement('th'); h1Th.textContent='Page Headline (H1)'; headerRow.appendChild(h1Th);
+    for(const f of allFeatures){ const th=document.createElement('th'); th.className='feat-th'; th.innerHTML=`<span>${f}</span>`; headerRow.appendChild(th); }
+    // Build rows
+    const heatTbody=document.querySelector('#heatmap-table tbody');
+    for(const [name, info] of Object.entries(banks)){
+      const tr=document.createElement('tr');
+      const nameTd=document.createElement('td'); nameTd.textContent=name; nameTd.style.fontWeight='600'; nameTd.style.whiteSpace='nowrap'; tr.appendChild(nameTd);
+      const h1Td=document.createElement('td'); h1Td.textContent=(info.h1s&&info.h1s[0])||'—'; h1Td.style.fontSize='11px'; h1Td.style.color='var(--muted)'; h1Td.style.maxWidth='200px'; tr.appendChild(h1Td);
+      const feats=info.features;
+      for(const f of allFeatures){ const td=document.createElement('td'); td.className=feats[f]? 'td-yes tooltip' : 'td-no tooltip'; td.dataset.tip=feats[f]? f+' — Present' : f+' — Missing'; td.textContent=feats[f]? '✓' : '✗'; tr.appendChild(td); }
+      heatTbody.appendChild(tr);
+    }
+    const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
+    const comparer = (idx, asc) => (a, b) => ((v1, v2) => v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2))
+        (getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+    document.querySelectorAll('#score-table th').forEach(th=> th.addEventListener('click', function(){
+        const table = th.closest('table');
+        Array.from(table.querySelectorAll('tbody > tr'))
+          .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+          .forEach(tr => table.tBodies[0].appendChild(tr) );
+    }));
+  })
+  .catch(err=>console.error('Failed to load data', err));
+</script>
+</body>
+</html>
