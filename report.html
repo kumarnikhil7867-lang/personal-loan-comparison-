@@ -62,6 +62,15 @@ th { color:var(--muted); font-weight:600; white-space:nowrap; }
 tbody tr:hover { background:var(--surface2); }
 .td-yes { color:#166534; font-weight:600; }
 .td-no { color:#991b1b; }
+.flow-step { position: relative; font-size: 13px; font-weight: 500; color: var(--text); padding-left: 24px; padding-bottom: 16px; text-align: left; }
+.flow-step::before { content: ''; position: absolute; left: 0; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+.flow-step::after { content: ''; position: absolute; left: 4px; top: 14px; bottom: -6px; width: 2px; background: var(--border); }
+.flow-step:last-child::after { display: none; }
+.flow-step-idx { font-size: 10px; color: var(--muted); margin-right: 6px; text-transform: uppercase; font-weight: 700; }
+.flow-bar-container { margin-bottom: 16px; }
+.flow-bar-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+.flow-bar-track { background: var(--surface2); border-radius: 10px; height: 10px; position: relative; border: 1px solid var(--border); }
+.flow-bar-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
 </style>
 </head>
 <body data-theme="dark">
@@ -76,6 +85,7 @@ tbody tr:hover { background:var(--surface2); }
   <a href="#heatmap">Feature Heatmap</a>
   <a href="#scores">Scoring Model</a>
   <a href="#profiles">Bank Profiles</a>
+  <a href="#flows">Layout Flows</a>
   <a href="#insights">Key Insights</a>
 </nav>
 <section class="section" id="summary">
@@ -106,8 +116,53 @@ tbody tr:hover { background:var(--surface2); }
   <div class="section-subtitle">Per‑bank coverage and suggestions.</div>
   <div id="bank-profiles"></div>
 </section>
-<section class="section" id="insights">
+<section class="section" id="flows">
   <div class="section-tag">Section 05</div>
+  <div class="section-title">Visual Layout Flows & Sequencing Patterns</div>
+  <div class="section-subtitle">Analyze how competitors sequence their content from top to bottom.</div>
+  
+  <div class="flow-container" style="display: flex; gap: 32px; flex-wrap: wrap;">
+    <!-- Left column: Flow stats and rules -->
+    <div style="flex: 1.5; min-width: 300px;">
+      <h3 style="margin-bottom: 16px;">Key Sequencing Rules</h3>
+      <div class="insight-grid" style="grid-template-columns: 1fr; gap: 12px; margin-bottom: 24px;">
+        <div class="insight-card" style="border-left: 4px solid var(--accent); padding: 12px 16px;">
+          <h4>Affordability Before Eligibility (76.5%)</h4>
+          <p>76.5% of lenders place the EMI Calculator before Eligibility Criteria. Users check payments before checking if they qualify.</p>
+        </div>
+        <div class="insight-card" style="border-left: 4px solid var(--accent); padding: 12px 16px;">
+          <h4>Eligibility Before Documents (66.7%)</h4>
+          <p>66.7% place Eligibility before Documents Required. Lenders hide document friction until eligibility is established.</p>
+        </div>
+        <div class="insight-card" style="border-left: 4px solid var(--accent2); padding: 12px 16px;">
+          <h4>FAQ as the Safety Net (94.4%)</h4>
+          <p>94.4% place the FAQ section at the very bottom of the page, acting as a final conversion fallback.</p>
+        </div>
+      </div>
+      
+      <h3 style="margin-bottom: 16px;">Average Relative Layout Sequence</h3>
+      <div id="average-flow-bar" style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+    
+    <!-- Right column: Interactive flow viewer -->
+    <div class="insight-card" style="flex: 1; min-width: 300px; display: flex; flex-direction: column; background: var(--surface2);">
+      <h3 style="margin-bottom: 12px;">Interactive Flow Viewer</h3>
+      <p style="font-size: 12px; color: var(--muted); margin-bottom: 16px;">Select a competitor to visualize their page's top-to-bottom layout sequence:</p>
+      
+      <select id="bank-flow-selector" onchange="renderBankFlow(this.value)" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--surface); color: var(--text); border: 1px solid var(--border); margin-bottom: 20px; font-weight: 500;">
+        <!-- Filled by JS -->
+      </select>
+      
+      <div id="vertical-flow-indicator" style="display: flex; flex-direction: column; gap: 12px; position: relative;">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section" id="insights">
+  <div class="section-tag">Section 06</div>
   <div class="section-title">Key Insights</div>
   <div class="section-subtitle">Observations from the analysis.</div>
   <div class="insight-grid" id="dynamic-insights">
@@ -120,9 +175,31 @@ tbody tr:hover { background:var(--surface2); }
 <script>
 const criticalFeatures = ["EMI Calculator","Apply Now CTA","Interest Rate Info","Eligibility Criteria","Documents Required","FAQ Section","Instant Disbursal Highlight","Lead Capture Form"];
 function toggleTheme(){ const body=document.body; const cur=body.getAttribute('data-theme'); body.setAttribute('data-theme',cur==='dark'?'light':'dark'); }
-fetch('analysis_data.json')
-  .then(r=>r.json())
-  .then(data=>{ const banks=data.banks; const allFeatures=Object.keys(Object.values(banks)[0].features);
+
+let globalFlows = [];
+function renderBankFlow(bankName) {
+  const bankData = globalFlows.find(b => b.bank === bankName);
+  const container = document.getElementById('vertical-flow-indicator');
+  container.innerHTML = '';
+  if (!bankData || !bankData.flow || bankData.flow.length === 0) {
+    container.innerHTML = '<p style="color: var(--muted); font-size: 13px;">No flow detected.</p>';
+    return;
+  }
+  bankData.flow.forEach((step, idx) => {
+    const el = document.createElement('div');
+    el.className = 'flow-step';
+    el.innerHTML = `<span class="flow-step-idx">Step ${idx+1}</span> ${step}`;
+    container.appendChild(el);
+  });
+}
+
+Promise.all([
+  fetch('analysis_data.json').then(r => r.json()),
+  fetch('flow_analysis_headings.json').then(r => r.json())
+])
+  .then(([data, flowData]) => {
+    globalFlows = flowData;
+    const banks=data.banks; const allFeatures=Object.keys(Object.values(banks)[0].features);
     let totalCoverage=0, totalCriticalMissing=0, topScore=0, topBank='';
     const heatmapBody=document.querySelector('#heatmap-table tbody');
     const scoreBody=document.querySelector('#score-table tbody');
@@ -146,6 +223,44 @@ fetch('analysis_data.json')
       profCard.innerHTML=`<h3>${name}</h3><p>Coverage: ${coverage}% (${present}/${allFeatures.length} features)</p><p>Missing Critical: ${criticalFeatures.filter(f=>!feats[f]).join(', ')||'None'}</p>`;
       profilesDiv.appendChild(profCard);
     }
+    // Populate Flow selector
+    const selector = document.getElementById('bank-flow-selector');
+    selector.innerHTML = '';
+    flowData.sort((a,b) => a.bank.localeCompare(b.bank)).forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b.bank;
+      opt.textContent = b.bank;
+      selector.appendChild(opt);
+    });
+    if (flowData.length > 0) {
+      renderBankFlow(flowData[0].bank);
+    }
+
+    // Populate Average relative flow timeline
+    const avgFlowContainer = document.getElementById('average-flow-bar');
+    avgFlowContainer.innerHTML = '';
+    const avgPositions = {
+      "Hero / Intro": 0.00,
+      "Lead Capture Form": 0.35,
+      "Documents Required": 0.40,
+      "Interest Rate & Charges": 0.44,
+      "Eligibility Criteria": 0.48,
+      "Step-by-Step Apply Process": 0.50,
+      "EMI Calculator": 0.59,
+      "Customer Testimonials": 0.62,
+      "FAQ Section": 0.65
+    };
+    Object.entries(avgPositions).forEach(([section, pos]) => {
+      const pct = Math.round(pos * 100);
+      const row = document.createElement('div');
+      row.className = 'flow-bar-container';
+      row.innerHTML = `
+        <div class="flow-bar-label"><span>${section}</span><span>${pct}% down the page</span></div>
+        <div class="flow-bar-track"><div class="flow-bar-fill" style="width: ${pct||5}%"></div></div>
+      `;
+      avgFlowContainer.appendChild(row);
+    });
+
     const numBanks = Object.keys(banks).length;
     const avgCov = (totalCoverage / numBanks).toFixed(1);
     document.getElementById('avg-coverage').textContent=avgCov+'%';
